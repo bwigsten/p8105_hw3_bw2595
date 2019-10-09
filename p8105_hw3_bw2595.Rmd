@@ -1,0 +1,33 @@
+---
+title: "p8105_hw3_bw2595"
+author: "Blair Wigsten"
+date: "10/8/2019"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+library(p8105.datasets)
+data("instacart")
+instacart
+```
+There are 1,384,617 observations and 15 variables in the instacart dataset. Most variables are integer variables, with the rest (eval_set, product_name, aisle, and department) as character variables. 
+*key variables 
+*illustrative examples
+
+
+```{r}
+instacart %>%
+  count(aisle) %>%
+  arrange(desc(n))
+```
+There are 134 distinct aisles, with "fresh vegetables", "fresh fruits", and "packaged vegetables and fruits" are where most items are ordered from based on the table produced above. 
+
+
+
+
+
+
