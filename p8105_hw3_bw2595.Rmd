@@ -3,6 +3,8 @@ title: "p8105_hw3_bw2595"
 author: "Blair Wigsten"
 date: "10/8/2019"
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r}
@@ -17,14 +19,32 @@ instacart
 There are 1,384,617 observations and 15 variables in the instacart dataset. Most variables are integer variables, with the rest (eval_set, product_name, aisle, and department) as character variables. 
 *key variables 
 *illustrative examples
-
-
 ```{r}
 instacart %>%
   count(aisle) %>%
   arrange(desc(n))
 ```
 There are 134 distinct aisles, with "fresh vegetables", "fresh fruits", and "packaged vegetables and fruits" are where most items are ordered from based on the table produced above. 
+
+Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+
+```{r}
+items_plot = instacart %>%
+  count(aisle) %>%
+  filter(n > 10000) %>%
+  rename(n_items_ordered = n)
+  
+ggplot(items_plot, aes(x = aisle, y = n_items_ordered)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  labs(
+    title = "Number of items ordered per aisle",
+    x = "aisle name",
+    y = "number of items ordered"
+  )
+```
+
+
 
 
 
