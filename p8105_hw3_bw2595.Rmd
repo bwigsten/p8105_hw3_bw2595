@@ -4,7 +4,7 @@ author: "Blair Wigsten"
 date: "10/8/2019"
 output: github_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r}
@@ -26,26 +26,105 @@ instacart %>%
 ```
 There are 134 distinct aisles, with "fresh vegetables", "fresh fruits", and "packaged vegetables and fruits" are where most items are ordered from based on the table produced above. 
 
-Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
 
 ```{r}
 items_plot = instacart %>%
   count(aisle) %>%
   filter(n > 10000) %>%
-  rename(n_items_ordered = n)
-  
-ggplot(items_plot, aes(x = aisle, y = n_items_ordered)) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  labs(
+  rename(n_items_ordered = n) %>%
+  ggplot(aes(x = reorder(aisle, -n_items_ordered), y = n_items_ordered)) +
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    labs(
     title = "Number of items ordered per aisle",
     x = "aisle name",
     y = "number of items ordered"
-  )
+    )
+items_plot
+```
+
+
+Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+
+```{r}
+popular_product = instacart %>%
+  group_by(product_name, aisle) %>%
+  summarize(
+    n_ordered = n()) %>%
+  group_by(aisle) %>%
+  filter(
+    aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits"), 
+    min_rank(desc(n_ordered)) < 4) %>%
+  arrange(n_ordered, aisle) %>%
+  kable(format = "pandoc", caption = "Most popular items by aisle")
+popular_product
+```
+
+Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+```{r}
+apples_cream = instacart %>%
+  rename(order_hour = order_hour_of_day) %>%
+  select(product_name, order_dow, order_hour) %>%
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>%
+  group_by(product_name, order_dow) %>%
+  summarize(
+    mean_hour_of_day = mean(order_hour)) %>%
+  mutate(
+    order_dow = as.character(order_dow),
+    order_dow = if_else(order_dow == "0", "Saturday", order_dow),
+    order_dow = if_else(order_dow == "1", "Sunday", order_dow),
+    order_dow = if_else(order_dow == "2", "Monday", order_dow),
+    order_dow = if_else(order_dow == "3", "Tuesday", order_dow),
+    order_dow = if_else(order_dow == "4", "Wednesday", order_dow),
+    order_dow = if_else(order_dow == "5", "Thursday", order_dow),
+    order_dow = if_else(order_dow == "6", "Friday", order_dow),
+  ) %>%
+  pivot_wider(
+    names_from = "product_name",
+    values_from = "mean_hour_of_day") %>%
+  kable(format = "pandoc", caption = "Mean Hour of Pink Lady Apples and Coffee Ice Cream Orders")
+apples_cream
 ```
 
 
 
+```{r}
+library(p8105.datasets)
+data("brfss_smart2010")
+brfss_smart2010
+```
+
+format the data to use appropriate variable names;
+focus on the “Overall Health” topic
+include only responses from “Excellent” to “Poor”
+organize responses as a factor taking levels ordered from “Poor” to “Excellent”
+
+```{r}
+brf = brfss_smart2010 %>%
+  filter(Topic == "Overall Health") %>%
+  count(Response)
+brf
+```
+
+
+```{r}
+brfss = brfss_smart2010 %>%
+  janitor::clean_names() %>%
+  rename(
+    state = locationabbr, 
+    county = locationdesc,
+    lcl = confidence_limit_low,
+    ucl = confidence_limit_high) %>%
+  filter(topic == "Overall Health",
+         response %in% c("Excellent", "Very Good", "Good", "Fair", "Poor")) %>%
+  mutate(
+    response = as.factor(response))
+brfss
+```
+```{r}
+brfss %>%
+  count(response)
+```
 
 
 
