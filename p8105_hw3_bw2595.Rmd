@@ -106,6 +106,13 @@ brf = brfss_smart2010 %>%
 brf
 ```
 
+```{r}
+response_table = brfss_smart2010 %>%
+  filter(Topic == "Overall Health") %>%
+  count(Response)
+response_table
+```
+responses are already in the range of "Excellent" to "Poor", taking on values of "Excellent", "Very good", "Good", "Fair", and "Poor". 
 
 ```{r}
 brfss = brfss_smart2010 %>%
@@ -115,16 +122,11 @@ brfss = brfss_smart2010 %>%
     county = locationdesc,
     lcl = confidence_limit_low,
     ucl = confidence_limit_high) %>%
-  filter(topic == "Overall Health",
-         response %in% c("Excellent", "Very Good", "Good", "Fair", "Poor")) %>%
-  mutate(
-    response = as.factor(response))
+  filter(topic == "Overall Health") %>%
+  mutate(response = factor(response, c("Poor", "Fair", "Good", "Very good", "Excellent")))
 brfss
 ```
-```{r}
-brfss %>%
-  count(response)
-```
+
 
 
 
