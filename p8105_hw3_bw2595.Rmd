@@ -126,24 +126,19 @@ In 2002, which states were observed at 7 or more locations? What about in 2010?
 ```{r}
 brfss1 = brfss_smart2010 %>% 
   filter(year == "2002") %>%
-  group_by(state) %>%
-  filter(n() >= 7) %>%
-  distinct(state, county)
-brfss1 %>%
+  distinct(state, county) %>%
   count(state) %>%
   filter(n >= 7) %>%
-  rename(number_observations = n) 
+  rename(number_sites = n)
+brfss1
 
 brfss2 = brfss_smart2010 %>% 
   filter(year == "2010") %>%
-  separate(county, into = c("states", "county")) %>%
-  group_by(state) %>%
-  filter(n() >= 7) %>%
-  distinct(state, county)
-brfss2 %>%
+  distinct(state, county) %>%
   count(state) %>%
   filter(n >= 7) %>%
-  rename(number_observations = n) 
+  rename(number_sites = n) 
+brfss2
 ```
 In 2002, there were 5 states which had 7 or more observation sites (counties), shown in the first table above. In 2010, there were 14 states which had 7 or more observations sites (counties), shown in the second table above. 
 
@@ -164,32 +159,31 @@ excellent
 Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State
 
 ```{r}
-NY_2006 = brfss_smart2010 %>%
-  filter(year == "2006", state == "NY") 
-
-NY_2010 = brfss_smart2010 %>%
-  filter(year == "2010", state == "NY")
-
-ggplot(data = NY_2006, aes(x = data_value, y = response)) +
-  geom_point()
-ggplot(data = NY_2010, aes(x = data_value, y = response)) +
-  geom_line()
-```
-
-```{r}
 brfss_smart2010 %>%
   filter(year %in% c("2006", "2010")) %>%
   select(year, response, data_value) %>%
-  ggplot(aes(x = data_value, y = response)) +
-  geom_point() +
+  ggplot(aes(x = response, y = data_value)) +
+  geom_boxplot() +
   facet_grid(~year)
 ```
 
 
-```{r}
-accel = read_csv(file = "fivethirtyeight_datasets/pols-month.csv") %>%
-```
 
+Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
+```{r}
+accel = read_csv(file = "data/accel_data.csv") %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    activity_1:activity_1440, 
+    names_to = "activity_number",
+    values_to = "activity") %>%
+  mutate(
+    day_vs_end = if_else(day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), "day", day),
+    day_vs_end = if_else(day_vs_end %in% c("Saturday", "Sunday"), "weekend", day_vs_end))
+    
+accel
+```
+After cleaning the names of the variables, I pivoted longer to tidy the activity variables and consolidate into activity_number and activity value as two separate variables. Then, to create the day_vs_end variable indicating weekday or weekend, I mutated the day variable to correspond to whether the value should be a weekday or weekend. 
 
 
 
