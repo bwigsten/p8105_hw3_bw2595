@@ -12,12 +12,14 @@ library(tidyverse)
 library(knitr)
 ```
 
+
+#Problem 1
 ```{r}
 library(p8105.datasets)
 data("instacart")
 instacart
 ```
-There are 1,384,617 observations and 15 variables in the instacart dataset. Most variables are integer variables, with the rest (eval_set, product_name, aisle, and department) as character variables. 
+There are 1,384,617 observations and 15 variables in the instacart dataset. Most variables are integer variables, with the rest (eval_set, product_name, aisle, and department) as character variables. Key variables for analysis could include if the item was reordered to determine popularity, aisle name in order to filter observations based on certain criteria, and order_dow to see when most orders are placed during the week. An illustrative example of this data would be the following for the first observation: 
 *key variables 
 *illustrative examples
 ```{r}
@@ -116,7 +118,7 @@ brfss_smart2010 = brfss_smart2010 %>%
     lcl = confidence_limit_low,
     ucl = confidence_limit_high) %>%
   separate(county, into = c("states", "county")) %>%
-  select(-states) %>%
+  select(-states, -data_value_footnote, -data_value_footnote_symbol, -location_id) %>%
   filter(topic == "Overall Health") %>%
   mutate(response = factor(response, c("Poor", "Fair", "Good", "Very good", "Excellent")))
 brfss_smart2010
@@ -150,7 +152,7 @@ excellent = brfss_smart2010 %>%
   group_by(year, state) %>%
   summarize(
     mean_data_value = mean(data_value)) %>%
-  ggplot(aes(x = year, y = mean_data_value, group = state)) +
+  ggplot(aes(x = year, y = mean_data_value, group = state, color = state)) +
   geom_line()
 excellent
 ```
@@ -159,12 +161,17 @@ excellent
 Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State
 
 ```{r}
-brfss_smart2010 %>%
-  filter(year %in% c("2006", "2010")) %>%
+NY_distribution = brfss_smart2010 %>%
+  filter(year %in% c("2006", "2010"), state == "NY") %>%
   select(year, response, data_value) %>%
   ggplot(aes(x = response, y = data_value)) +
-  geom_boxplot() +
-  facet_grid(~year)
+    geom_boxplot() +
+    facet_grid(~year) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    labs(
+      title = "Distribution of Data Values for 2006 and 2010 in NY"
+    )
+NY_distribution
 ```
 
 
@@ -178,14 +185,47 @@ accel = read_csv(file = "data/accel_data.csv") %>%
     names_to = "activity_number",
     values_to = "activity") %>%
   mutate(
-    day_vs_end = if_else(day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), "day", day),
-    day_vs_end = if_else(day_vs_end %in% c("Saturday", "Sunday"), "weekend", day_vs_end))
-    
+    day_type = if_else(day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"), "day", day),
+    day_type = if_else(day_type %in% c("Saturday", "Sunday"), "weekend", day_type)) %>%
+  rename(
+    day_number = day_id,
+    day_name = day
+  )
 accel
 ```
-After cleaning the names of the variables, I pivoted longer to tidy the activity variables and consolidate into activity_number and activity value as two separate variables. Then, to create the day_vs_end variable indicating weekday or weekend, I mutated the day variable to correspond to whether the value should be a weekday or weekend. 
+After cleaning the names of the variables, I pivoted longer to tidy the activity variables and consolidate into activity_number and activity value as two separate variables. Then, to create the day_vs_end variable indicating weekday or weekend, I mutated the day variable to correspond to whether the value should be a weekday or weekend. The final cleaned accel dataset contains 6 variables (week, day_id, day, activity_number, activity, and day_vs_end). There are 50,400 observations in the final accel dataset.
 
 
+Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+
+```{r}
+accel_sum = accel %>%
+  group_by(day_number) %>%
+  summarize(activity_sum = sum(activity))
+
+kable(accel_sum, format = "pandoc", caption = "Total activity per day")
+accel_sum
+
+accel_sum %>%
+  ggplot(aes(x = day_number, y = activity_sum)) +
+  geom_line()
+
+
+```
+Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+
+```{r}
+plot = accel %>%
+  separate(activity_number, into = c("activity_number", "minute_number")) %>%
+  select(-activity_number) %>%
+  group_by(minute_number = cut(minute_number, breaks = 60))
+plot
+```
+
+
+
+group_by(DeviceTime = cut(DeviceTime, breaks="5 min")) %>%
+  summarize(Concentration = mean(Concentration))
 
 
 
