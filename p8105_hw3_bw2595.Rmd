@@ -19,17 +19,18 @@ library(p8105.datasets)
 data("instacart")
 instacart
 ```
-There are 1,384,617 observations and 15 variables in the instacart dataset. Most variables are integer variables, with the rest (eval_set, product_name, aisle, and department) as character variables. Key variables for analysis could include if the item was reordered to determine popularity, aisle name in order to filter observations based on certain criteria, and order_dow to see when most orders are placed during the week. An illustrative example of this data would be the following for the first observation: 
-*key variables 
+*There are 1,384,617 observations and 15 variables in the instacart dataset. Most variables are integer variables, with the rest (eval_set, product_name, aisle, and department) as character variables. Key variables for analysis could include if the item was reordered to determine popularity, aisle name in order to filter observations based on certain criteria, and order_dow to see when most orders are placed during the week. An illustrative example of this data would be the following for the first observation: 
 *illustrative examples
+
+## How many aisles are there, and which aisles are the most items ordered from?
 ```{r}
 instacart %>%
   count(aisle) %>%
   arrange(desc(n))
 ```
-There are 134 distinct aisles, with "fresh vegetables", "fresh fruits", and "packaged vegetables and fruits" are where most items are ordered from based on the table produced above. 
+There are 134 distinct aisles. The aisles "fresh vegetables", "fresh fruits", and "packaged vegetables fruits" are where most items are ordered from based on the table produced above. 
 
-
+## Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
 ```{r}
 items_plot = instacart %>%
   count(aisle) %>%
@@ -45,10 +46,10 @@ items_plot = instacart %>%
     )
 items_plot
 ```
+* This plot shows the number of items ordered in each aisle, limiting the plot to aisles with more than 10000 items ordered. Items have been arranged by most ordered to least ordered. 
 
 
-Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
-
+## Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
 ```{r}
 popular_product = instacart %>%
   group_by(product_name, aisle) %>%
@@ -62,8 +63,10 @@ popular_product = instacart %>%
   kable(format = "pandoc", caption = "Most popular items by aisle")
 popular_product
 ```
+* Based on the table above, snack sticks were the most ordered item within "dog food care" with 30 orders. Light brown sugar was the most ordered item in the "baking ingredients" aisle with 499 orders, and organic baby spinach was the most ordered item in the "packaged vegetables fruits" aisle with 9784 orders. 
 
-Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+
+## Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
 ```{r}
 apples_cream = instacart %>%
   rename(order_hour = order_hour_of_day) %>%
@@ -88,27 +91,27 @@ apples_cream = instacart %>%
   kable(format = "pandoc", caption = "Mean Hour of Pink Lady Apples and Coffee Ice Cream Orders")
 apples_cream
 ```
+* The table above shows the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week. 
 
+# Problem 2
 
+## load the brfss_smart2010 data
 ```{r}
 library(p8105.datasets)
 data("brfss_smart2010")
 brfss_smart2010
 ```
 
-format the data to use appropriate variable names;
-focus on the “Overall Health” topic
-include only responses from “Excellent” to “Poor”
-organize responses as a factor taking levels ordered from “Poor” to “Excellent”
-
+## Data cleaning; check to see how responses are coded already
 ```{r}
 response_table = brfss_smart2010 %>%
   filter(Topic == "Overall Health") %>%
   count(Response)
 response_table
 ```
-responses are already in the range of "Excellent" to "Poor", taking on values of "Excellent", "Very good", "Good", "Fair", and "Poor". 
+* responses are already in the range of "Excellent" to "Poor", taking on values of "Excellent", "Very good", "Good", "Fair", and "Poor". 
 
+## Data cleaning 
 ```{r}
 brfss_smart2010 = brfss_smart2010 %>%
   janitor::clean_names() %>%
@@ -123,6 +126,8 @@ brfss_smart2010 = brfss_smart2010 %>%
   mutate(response = factor(response, c("Poor", "Fair", "Good", "Very good", "Excellent")))
 brfss_smart2010
 ```
+* Here, we clean the variable names, then rename locationabbr to state, confidence_limit_low to lcl, and confidence_limit_high to ucl for clarity. Then, we separate county into states and county. Then we eliminate all the repetitive variables (states) and variables with no information. Finally, we filter the data by topic "Overall Health" and mutate response into a factor variable ranging from "Poor" to "Excellent".
+
 In 2002, which states were observed at 7 or more locations? What about in 2010?
 
 ```{r}
